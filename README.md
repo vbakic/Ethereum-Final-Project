@@ -4,11 +4,18 @@
 
 I've updated package.json file to contain `assert-plus` and `babel-polyfill` node modules. Running `npm i` should be enough to setup all required node modules and all the versions should be the same as in the `exam-step-2` repo.
 
-* All of unit tests should pass, including scenarios.js, by running `truffle test` command. There should be 176 tests in total and all of them should pass. I tested all of them in Vagrant box.
+## Truffle tests
+
+* All of unit tests should pass, including scenarios.js, by running `truffle test` command. There should be 175 tests in total and all of them should pass. I tested all of them in Vagrant box.
+* Before running tests, ganache should be started first:
+
+```sh
+$ ganache-cli -l 15000000 --allowUnlimitedContractSize
+```
 
 ### Truffle Migration
 
-To succesfully deploy `Regulator` and `TollBoothOperator` instances, ganache should be executed via (I don't thing that `--allowUnlimitedContractSize` is actually required, but I kept using it right from the begining):
+To succesfully deploy `Regulator` and `TollBoothOperator` instances, ganache should be executed just like for truffle tests (I don't thing that `--allowUnlimitedContractSize` is actually required, but I kept using it right from the begining):
 ```sh
 $ ganache-cli -l 15000000 --allowUnlimitedContractSize
 ```
