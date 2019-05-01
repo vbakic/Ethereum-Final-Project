@@ -6,31 +6,38 @@ I've updated package.json file to contain `assert-plus` and `babel-polyfill` nod
 
 ## Truffle tests
 
-* All of unit tests should pass, including scenarios.js, by running `truffle test` command. There should be 175 tests in total and all of them should pass. I tested all of them in Vagrant box.
 * Before running tests, ganache should be started first:
-
+  
 ```sh
 $ ganache-cli -l 15000000 --allowUnlimitedContractSize
 ```
+
+* All of unit tests should pass, including scenarios.js, by running `truffle test` command. There should be 175 tests in total. I tested all of them in Vagrant box.
 
 ### Truffle Migration
 
-To succesfully deploy `Regulator` and `TollBoothOperator` instances, ganache should be executed just like for truffle tests (I don't thing that `--allowUnlimitedContractSize` is actually required, but I kept using it right from the begining):
+To succesfully deploy `Regulator` and `TollBoothOperator` instances, ganache should be executed as:
 ```sh
-$ ganache-cli -l 15000000 --allowUnlimitedContractSize
+$ ganache-cli -l 15000000 -h 0.0.0.0
 ```
+This takes care that limit for gas is raised above default and the address is 0.0.0.0 which is important when running the webpack from Vagrant VM, otherwise it won't be accessible in host OS.
 
 `2_deploy_contracts.js` is the file for deploying those two contracts.
 
-Unfortunately, I had issues with the requirements that `TollBoothOperator` should only be deployed by calling `createNewOperator` function on already deployed `Regulator` instance. This was giving me hard time, because if I deployed the `TollBoothOperator` that way, the truffle wouldn't "know" its existence, or at least I didn't know how to manage that.
-It doesn't sound reasonable to copy/paste `TollBoothOperator` from the migration console output each time and paste it into code of the GUI application and use the contract off that address. Instead, I just used deployer to deploy `TollBoothOperator` and I did it in resumed state. In that case there was the same owner (the default account on the network, typicall the first) for both contract instances, which is not desirable, but I was running pretty close to the deadline, had to simplify things as I wasn't able to meet all requirements.
+Due to requirements that we were supposed to deploy `Regulator` and then create new `TollBoothOperator` by calling `createNewOperator` function, only `Regulator` would be deployed via deployer; the `TollBoothOperator` address would be recorded in the event log of the `Regulator` and it would be used to instantiate the contract that exists on that address.
+
+I chose second account for the `TollBoothOperator` owner. Since `TollBoothOperator` is created in paused state by default, I would run the `setPaused` function right after the creation.
 
 ### GUI notes
 
-For GUI I used simple webpack instance, it was already there in `exam-step-2` repository, I only needed a couple of minor adjustments. 
+For GUI I used simple webpack instance, it was already there in `exam-step-2` repository, I only needed a couple of minor adjustments when it comes to paths and file names.
 
-GUI should be run by executing `npm run dev` when positioned in `app` directory since that is where the webpack code is.
+GUI should be run by executing `npm run dev` when positioned in `app` directory since that is where the webpack code is. The app can then be accessed on http://localhost:8000 URL.
 
-* I had issues with my Vagrant instance, the 8080 (or any other I tried) port was inaccessible on my host machine, thus (unfortunately) I wasn't able to confirm that GUI is working properly when served from Vagrant box. Because of that all GUI testing was done in my local enviroment. This makes me feel unconfortable at the very least.
+Since `TollBoothOperator` is deployed unlike `Regulator`, where standard `.deployed()` function is used, I would read logs for `Regulator` specifically for the `LogTollBoothOperatorCreated` event and then use first ever `TollBoothOperator` address to instantiate it as truffle-contract instance using `.at()` function. The downside of it is that is really slow, it literally hangs the entire app for ~10 seconds. I've read that it is due to the fact that contract code is fetched and validated instead of simple `.deployed()`. It is allegedly fixed in newer truffle versions, but I haven't tried it personally.
 
-* Furthermore, I had big problems calling `createNewOperator` from the GUI, even though it was working perfectly fine in `scenarios.js` file, it would just throw `revert` for some reason when called from GUI. Because of that I just used `TollBoothOperator` instance I deployed in truffle migration via `deployer.deploy()` function as I mentioned in truffle migration paragraph.
+The `Regulator` instance is fixed to the deployed one, thus it can only be one `Regulator` instance, but `Regulator` owner is free to create new `TollBoothOperator` instances and set their owner.
+
+Any existing `TollBoothOperator` address can be loaded on `TollBoothOperator` page by entering its address and clicking `Load Operator from an address` button. When `TollBoothOperator` is loaded from an address, the the data from Vehicle Entries/Exits and Pending Payments logs would also be fetched and presented to a user. The data would be updated from then on with new rows as the new events happen.
+
+There are two predefined vehicles and two Toll Booth addresses, for simplicity. I could have made them as inputs, which I did initially, but I figured the code was unnecessarily complex. You could test the app without entering any particular address, just the values for vehicle type, multiplier, deposit.

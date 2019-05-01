@@ -8,132 +8,132 @@
 </head>
 <body>
 
-    <div>
-        <table>
-            <tr>
-                <td>Regulator Owner:</td>
-                <td><span id="regulatorOwner"></span></td>
-            </tr>
-            <tr>
-                <td>Operator Owner:</td>
-                <td><span id="operatorOwner"></span></td>
-            </tr>
-            <tr>
-                <td>Vehicle 1:</td>
-                <td><span id="vehicle1"></span></td>
-            </tr>
-            <tr>
-                <td>Vehicle 2:</td>
-                <td><span id="vehicle2"></span></td>
-            </tr>
-            <tr>
-                <td>Booth 1:</td>
-                <td><span id="booth1"></span></td>
-            </tr>
-            <tr>
-                <td>Booth 2:</td>
-                <td><span id="booth2"></span></td>
-            </tr>
-            <tr>
-                <td>Hashed secret 1:</td>
-                <td><span id="hashedSecret"></span></td>
-            </tr>
-            <tr>
-                <td>Hashed secret 2:</td>
-                <td><span id="hashedSecret2"></span></td>
-            </tr>
-            <tr>
-                <td>Vehicle 1 balance:</td>
-                <td><input class="wide" id="vehicle1Balance" disabled="disabled" /></td>
-            </tr>
-            <tr>
-                <td>Vehicle 2 balance:</td>
-                <td><input class="wide" id="vehicle2Balance" disabled="disabled" /></td>
-            </tr>
+    <div id="lists">
+        <span>Accounts list:</span>
+        <ul id="accountsList"></ul>
+        <br>
+        <span class="operators">List of all Operators created by the Regulator:</span>
+        <table class="operators" id="operators">
+            <tr><th>Operator address</th><th>Operator owner address</th></tr>
+        </table>
+        <br>
+        <span class="vehicleEntries">List of all vehicle entries:</span>
+        <table class="vehicleEntries" id="vehicleEntries">
+            <tr><th>Vehicle</th><th>Entry booth</th><th>Deposit amount</th></tr>
+        </table>
+        <br>
+        <span class="vehicleExits">List of all vehicle exits:</span>
+        <table class="vehicleExits" id="vehicleExits">
+            <tr><th>Exit booth</th><th>Exit secret hashed</th><th>Charged</th><th>Refunded</th></tr>
+        </table>
+        <br>
+        <span class="pendingPayments">List of all pending payments:</span>
+        <table class="pendingPayments" id="pendingPayments">
+            <tr><th>Entry booth</th><th>Exit booth</th><th>Exit Secret Hashed</th></tr>
         </table>
     </div>
 
-    <script>
-        $(document).ready(function() {
-            $('#tabs li a:not(:first)').addClass('inactive');
-                $('.container').hide();
-                $('.container:first').show();                    
-                $('#tabs li a').click(function(){
-                    var t = $(this).attr('id');
-                if($(this).hasClass('inactive')){ //this is the start of our condition 
-                    $('#tabs li a').addClass('inactive');           
-                    $(this).removeClass('inactive');                    
-                    $('.container').hide();
-                    $('#'+ t + 'C').fadeIn('slow');
-                }
-            });
-        });
-    </script>
+    <img id="loader" src="./ajax-loader.gif" alt="Loading..." style="margin: 25px 0px 0px 166px;">
 
-    <ul id="tabs">
-        <li><a id="tab1">Regulator</a></li>
-        <li><a id="tab2">Operator</a></li>
-        <li><a id="tab3">Vehicle</a></li>
-        <li><a id="tab4">Toll Booth</a></li>      
-    </ul>
+    <div id="content" style="display: none;">
 
-    <div class="container" id="tab1C">
-        <h3>Regulator Page</h3>
-        <button onclick="App.createNewOperator();">Create new operator (doesn't work)</button>
-        <br>
-        <span>Enter Vehicle Type: </span><input id="vehicleType" />
-        <br>
-        <button onclick="App.updateVehicleType(0);">Update Vehicle Type for Vehicle 1</button>
-        <button onclick="App.updateVehicleType(1);">Update Vehicle Type for Vehicle 2</button>
+        <ul id="tabs">
+            <li><a id="tab1">Regulator</a></li>
+            <li><a id="tab2">Operator</a></li>
+            <li><a id="tab3">Vehicle</a></li>
+            <li><a id="tab4">Toll Booth</a></li>      
+        </ul>
+
+        <div class="container" id="tab1C">
+
+            <span>Regulator Owner:</span>
+            <span id="regulatorOwner"></span>
+            <br>
+            
+            <span>New operator owner address:</span>
+            <input id="operatorOwnerInput" />
+            <button onclick="App.createNewOperator();">Create new operator</button>
+            
+            <br>
+            <span>Enter Vehicle Type: </span><input id="vehicleType" />
+            <br>
+            <button onclick="App.updateVehicleType(0);">Update Vehicle Type for Vehicle 1</button>
+            <button onclick="App.updateVehicleType(1);">Update Vehicle Type for Vehicle 2</button>
+        </div>
+
+        <div class="container" id="tab2C">
+            
+            <input id="operatorAddressInput" />
+            <button onclick="App.loadExistingOperator();">Load Operator from an address</button>
+            <br>
+
+            <div class="operatorFunctions" style="display: none;">
+                <table >
+                        <tr>
+                            <td>Booth 1:</td>
+                            <td id="booth1"></td>
+                        </tr>
+                        <tr>
+                            <td>Booth 2:</td>
+                            <td id="booth2"></td>
+                        </tr>
+                </table>
+                <button onclick="App.addTollBooth(0);">Add toll booth 1</button>
+                <button onclick="App.addTollBooth(1);">Add toll booth 2</button>
+                <br>
+                <input id="baseRoutePrice" />
+                <button onclick="App.addBaseRoutePrice();">Add route base price</button>
+                <br>
+                <span>Vehicle Type: </span><input id="vehicleTypeOperator" />
+                <span>Enter Multiplier: </span><input id="multiplier" />
+                <button onclick="App.setMultiplier();">Set multiplier</button>
+            </div>        
+        </div>
+
+        <div class="container" id="tab3C">
+            <table>                
+                <tr>
+                    <td>Vehicle 1:</td>
+                    <td id="vehicle1"></td>
+                </tr>
+                <tr>
+                    <td>Vehicle 2:</td>
+                    <td id="vehicle2"></td>
+                </tr>          
+                <tr>
+                    <td>Vehicle 1 balance:</td>
+                    <td><input class="wide" id="vehicle1Balance" disabled="disabled" /></td>
+                </tr>
+                <tr>
+                    <td>Vehicle 2 balance:</td>
+                    <td><input class="wide" id="vehicle2Balance" disabled="disabled" /></td>
+                </tr>
+            </table>
+
+            <div class="onlyIfOperatorLoaded" style="display: none;">
+
+                <span>Enter Deposit: </span><input id="deposit" />
+                <br>
+                <span>Enter Vehicle 1 secret: </span><input id="secret1" value="password1" />
+                <button onclick="App.entryDeposit(0);">Entry Deposit Vehicle 1</button>
+                <br>
+                <span>Enter Vehicle 2 secret: </span><input id="secret2" value="password2" />
+                <button onclick="App.entryDeposit(1);">Entry Deposit Vehicle 2</button>
+                
+            </div>
+            
+
+        </div>
+
+        <div class="container" id="tab4C">
+            <input id="secret" />
+            <button onclick="App.reportExitRoad()">Report Exit Road</button>
+            
+        </div>
+
+        <span style="color: red; margin-top: 20px;" id="successMessage"></span>
+
     </div>
-
-    
-
-    <div class="container" id="tab2C">
-        <h3>Operator Page</h3>
-        <button onclick="App.addTollBooth(0);">Add toll booth 1</button>
-        <button onclick="App.addTollBooth(1);">Add toll booth 2</button>
-        <br>
-        <input id="baseRoutePrice" />
-        <button onclick="App.addBaseRoutePrice();">Add route base price</button>
-        <br>
-        <span>Vehicle Type: </span><input id="vehicleTypeOperator" />
-        <span>Enter Multiplier: </span><input id="multiplier" />
-        <button onclick="App.setMultiplier();">Set multiplier</button>
-    </div>
-
-    <div class="container" id="tab3C">
-        <h3>Vehicle Page</h3>
-        <span>Enter Deposit: </span><input id="deposit" />
-        <br>
-        <span>Enter Vehicle 1 secret: </span><input id="secret1" value="password1" />
-        <button onclick="App.entryDeposit(0);">Entry Deposit Vehicle 1</button>
-        <br>
-        <span>Enter Vehicle 2 secret: </span><input id="secret2" value="password2" />
-        <button onclick="App.entryDeposit(1);">Entry Deposit Vehicle 2</button>
-        <br><br>
-        <input id="secretToCheck" />
-        <button onclick="App.getVehicleEntry();">Get vehicle entry</button><br>
-        <span>Vehicle Address: </span><input class="wider" id="vehicleAddress" disabled="disabled" /><br>
-        <span>Entry Booth Address: </span><input class="wider" id="entryBoothInfo" disabled="disabled" /><br>
-        <span>Deposit at Entry Booth: </span><input class="wider" id="depositedWeis" disabled="disabled" /><br>
-        <p>Vehicle Entries:</p>
-        <ul id="vehicleEntries"></ul>
-        
-
-    </div>
-
-    <div class="container" id="tab4C">
-        <h3>Toll Booth Page</h3>
-        <br>
-        <input id="secret" />
-        <button onclick="App.reportExitRoad()">Report Exit Road</button>
-        <p>Vehicle Exits:</p>
-        <ul id="vehicleExits"></ul>
-
-    </div>
-
-    <span style="color: red; margin-top: 20px;" id="successMessage"></span>
 
 
 </body>
