@@ -15,8 +15,6 @@ if (typeof web3.eth.getAccountsPromise === "undefined") {
 const Regulator = artifacts.require("./Regulator.sol");
 const TollBoothOperator = artifacts.require("./TollBoothOperator.sol");
 
-let totalGas = 0;
-
 contract("TollBoothOperator", accounts => {
 
     const [regulatorOwner, operatorOwner, booth1, booth2, vehicle1, vehicle2] = accounts;
@@ -73,7 +71,6 @@ contract("TollBoothOperator", accounts => {
                 let expectedFee = actualDeposit1;
 
                 let tx = await operator.reportExitRoad(secret, { from: booth2 });
-                totalGas += tx.receipt.gasUsed;
                 assert.strictEqual(tx.receipt.logs.length, 1);
                 assert.strictEqual(tx.logs.length, 1);
                 const logExited = tx.logs[0];
@@ -128,7 +125,6 @@ contract("TollBoothOperator", accounts => {
                 await operator.setRoutePrice(booth1, booth2, basePrice3, { from: operatorOwner });
 
                 let tx = await operator.reportExitRoad(secret, { from: booth2 });
-                totalGas += tx.receipt.gasUsed;
                 
                 assert.strictEqual(tx.receipt.logs.length, 1);
                 assert.strictEqual(tx.logs.length, 1);
@@ -165,7 +161,6 @@ contract("TollBoothOperator", accounts => {
                 let expectedReturn = actualDeposit2 - expectedFee;
 
                 let tx = await operator.reportExitRoad(secret, { from: booth2 });
-                totalGas += tx.receipt.gasUsed;
                 
                 assert.strictEqual(tx.receipt.logs.length, 1);
                 assert.strictEqual(tx.logs.length, 1);
@@ -206,7 +201,6 @@ contract("TollBoothOperator", accounts => {
                 let expectedReturn = actualDeposit2 - expectedFee;
 
                 let tx = await operator.reportExitRoad(secret, { from: booth2 });
-                totalGas += tx.receipt.gasUsed;
 
                 assert.strictEqual(tx.receipt.logs.length, 1);
                 assert.strictEqual(tx.logs.length, 1);
@@ -217,7 +211,6 @@ contract("TollBoothOperator", accounts => {
                 assert.strictEqual(logPending.args.exitBooth, booth2);
 
                 let tx2 = await operator.setRoutePrice(booth1, booth2, basePrice4, { from: operatorOwner });
-                totalGas += tx2.receipt.gasUsed;
                 
                 assert.strictEqual(tx2.receipt.logs.length, 2);
                 assert.strictEqual(tx2.logs.length, 2);
@@ -263,7 +256,6 @@ contract("TollBoothOperator", accounts => {
                 let expectedReturn2 = actualDeposit3 - expectedFee2; //4;
 
                 let tx = await operator.reportExitRoad(secret, { from: booth2 });
-                totalGas += tx.receipt.gasUsed;
                 assert.strictEqual(tx.receipt.logs.length, 1);
                 assert.strictEqual(tx.logs.length, 1);
                 const logPending = tx.logs[0];
@@ -273,7 +265,6 @@ contract("TollBoothOperator", accounts => {
                 assert.strictEqual(logPending.args.exitBooth, booth2);
 
                 let tx2 = await operator.reportExitRoad(secret2, { from: booth2 });
-                totalGas += tx2.receipt.gasUsed;
                 assert.strictEqual(tx2.receipt.logs.length, 1);
                 assert.strictEqual(tx2.logs.length, 1);
                 const logPending2 = tx2.logs[0];
@@ -283,7 +274,6 @@ contract("TollBoothOperator", accounts => {
                 assert.strictEqual(logPending2.args.exitBooth, booth2);
 
                 let tx3 = await operator.setRoutePrice(booth1, booth2, basePrice3, { from: operatorOwner });
-                totalGas += tx3.receipt.gasUsed;                
                 assert.strictEqual(tx3.receipt.logs.length, 2);
                 assert.strictEqual(tx3.logs.length, 2);
                 const logPriceSet = tx3.logs[0];
@@ -304,7 +294,6 @@ contract("TollBoothOperator", accounts => {
                 assert.strictEqual(vehicle1Balance.toNumber(), vehicle1BalanceInitial.toNumber() + expectedReturn);
 
                 let tx4 = await operator.clearSomePendingPayments(booth1, booth2, 1, { from: operatorOwner });
-                totalGas += tx4.receipt.gasUsed;
                 assert.strictEqual(tx4.receipt.logs.length, 1);
                 assert.strictEqual(tx4.logs.length, 1);
                 const logExited2 = tx4.logs[0];
@@ -322,12 +311,6 @@ contract("TollBoothOperator", accounts => {
             
         });
 
-    });
-
-    describe("output total gas", function() {
-        it("should output total gas", async () => {
-            console.log("total gas: " + parseInt(totalGas/1000));
-        });
     });
     
 
