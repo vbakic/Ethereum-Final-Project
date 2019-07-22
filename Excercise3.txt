@@ -1,0 +1,8 @@
+Excercise 3 - additional comments:
+
+Fallback function does not check if any funds are deposited (if mgs.value is > 0), 
+or the address that is calling the function, it just splits whatever there is in the contract to other two addresses. 
+
+Because of that, anyone (and particularly the owners of "one" and "two" addresses) could call fallback 
+function and drain contract out of funds, although it would still go 
+to the "one" and "two" addresses, provided that they accept transfers.
